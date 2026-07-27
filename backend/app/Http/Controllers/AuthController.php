@@ -17,6 +17,7 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name'           => 'required|string|max:255',
+            'username'       => 'nullable|string|max:50|unique:users',
             'email'          => 'required|string|email|max:255|unique:users',
             'password'       => 'required|string|min:8|confirmed',
             'whatsapp_phone' => 'nullable|string|max:30',
@@ -25,6 +26,8 @@ class AuthController extends Controller
 
         $user = User::create([
             'name'           => $validated['name'],
+            'username'       => $validated['username']
+                ?? strtolower(str_replace(' ', '', $validated['name'])) . rand(100, 999),
             'email'          => $validated['email'],
             'password'       => Hash::make($validated['password']),
             'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,

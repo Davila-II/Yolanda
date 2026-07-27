@@ -70,15 +70,19 @@ const mockRegister = async (data) => {
 }
 
 export const login = (credentials) =>
-  USE_MOCK ? mockLogin(credentials) : client.post('/auth/login', credentials)
+  USE_MOCK
+    ? mockLogin(credentials)
+    : client.post('/auth/login', credentials).then((res) => res.data)
 
 export const register = (data) =>
-  USE_MOCK ? mockRegister(data) : client.post('/auth/register', data)
+  USE_MOCK
+    ? mockRegister(data)
+    : client.post('/auth/register', data).then((res) => res.data)
 
 export const getMe = () =>
   USE_MOCK
     ? Promise.resolve({ data: JSON.parse(localStorage.getItem('user') || 'null') })
-    : client.get('/auth/me')
+    : client.get('/auth/me').then((res) => res.data)
 
 export const logout = () => {
   localStorage.removeItem('token')
