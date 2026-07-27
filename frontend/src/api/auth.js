@@ -18,7 +18,7 @@ const mockLogin = async (credentials) => {
       email: 'test@yolanda.cm',
       avatar: null,
       city: 'Douala',
-      bio: 'Passionnée de mode circulaire ✨',
+      bio: 'Passionnée de mode circulaire et de durabilité. Je partage mes trouvailles et astuces pour un style éthique et responsable.',
       whatsapp: '+237 6XX XXX XXX',
       role: 'user',
     }
