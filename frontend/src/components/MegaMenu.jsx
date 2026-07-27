@@ -96,23 +96,27 @@ export default function MegaMenu() {
               </div>
 
               {/* Colonnes de sous-catégories */}
-              {activeCategoryData.subcategories.map((sub) => (
+              {(activeCategoryData.subcategories || activeCategoryData.children || []).map((sub) => (
                 <div key={sub.name}>
                   <h4 className="text-xs text-gray-light font-medium uppercase tracking-wider mb-3">
                     {sub.name}
                   </h4>
                   <ul className="space-y-2">
-                    {sub.children.map((child) => (
-                      <li key={child}>
-                        <Link
-                          to={`/category/${activeCategoryData.slug}?subcategory=${encodeURIComponent(child)}`}
-                          onClick={() => setActiveCategory(null)}
-                          className="text-sm text-charcoal hover:text-terracotta transition-colors"
-                        >
-                          {child}
-                        </Link>
-                      </li>
-                    ))}
+                    {(sub.children || []).map((child) => {
+                      const childName = typeof child === 'string' ? child : child.name
+                      const childSlug = typeof child === 'string' ? child : child.slug
+                      return (
+                        <li key={childName}>
+                          <Link
+                            to={`/category/${activeCategoryData.slug}?subcategory=${encodeURIComponent(childSlug)}`}
+                            onClick={() => setActiveCategory(null)}
+                            className="text-sm text-charcoal hover:text-terracotta transition-colors"
+                          >
+                            {childName}
+                          </Link>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               ))}
