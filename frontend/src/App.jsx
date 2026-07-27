@@ -11,6 +11,9 @@ import RegisterPage from './pages/RegisterPage.jsx'
 import CategoryPage from './pages/CategoryPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
 import StaticPage from './pages/StaticPage.jsx'
+import SearchPage from './pages/SearchPage.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 
 // Pages protégées
 import PublishProductPage from './pages/PublishProductPage.jsx'
@@ -37,8 +40,9 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
-          <Route path="/search" element={<CategoryPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/page/:slug" element={<StaticPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/publish" element={<ProtectedRoute><PublishProductPage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
@@ -54,6 +58,9 @@ export default function App() {
           <Route path="/admin/pages" element={<AdminPagesPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
         </Route>
+
+        {/* 404 */}
+        <Route path="*" element={<Layout><NotFoundPage /></Layout>} />
       </Routes>
     </AuthProvider>
   )
