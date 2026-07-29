@@ -63,7 +63,7 @@ export default function FilterBar({
         </FilterSection>
 
         {/* SOUS-CATÉGORIE */}
-        {selectedCategory && selectedCategory.subcategories?.length > 0 && (
+        {selectedCategory && (selectedCategory.subcategories || selectedCategory.children)?.length > 0 && (
           <FilterSection title="Sous-catégorie">
             <button
               onClick={() => update('subcategory', '')}
@@ -73,20 +73,24 @@ export default function FilterBar({
             >
               Toutes
             </button>
-            {selectedCategory.subcategories.flatMap((sub) =>
-              (sub.children || []).map((child) => (
-                <button
-                  key={child}
-                  onClick={() => update('subcategory', child)}
-                  className={`block w-full text-left text-sm py-1.5 transition-colors ${
-                    filters.subcategory === child
-                      ? 'text-terracotta font-medium'
-                      : 'text-gray-medium hover:text-charcoal'
-                  }`}
-                >
-                  {child}
-                </button>
-              ))
+            {(selectedCategory.subcategories || selectedCategory.children).flatMap((sub) =>
+              (sub.children || []).map((child) => {
+                const childName = typeof child === 'string' ? child : child.name
+                const childSlug = typeof child === 'string' ? child : child.slug
+                return (
+                  <button
+                    key={childName}
+                    onClick={() => update('subcategory', childSlug)}
+                    className={`block w-full text-left text-sm py-1.5 transition-colors ${
+                      filters.subcategory === childSlug
+                        ? 'text-terracotta font-medium'
+                        : 'text-gray-medium hover:text-charcoal'
+                    }`}
+                  >
+                    {childName}
+                  </button>
+                )
+              })
             )}
           </FilterSection>
         )}

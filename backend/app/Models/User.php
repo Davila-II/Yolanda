@@ -13,12 +13,14 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'whatsapp_phone', 'city', 'avatar_url', 'bio'])]
+#[Fillable(['name', 'username', 'email', 'password', 'whatsapp_phone', 'city', 'avatar_url', 'bio'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    protected $appends = ['avatar', 'whatsapp', 'role'];
 
     /**
      * Get the attributes that should be cast.
@@ -83,5 +85,24 @@ class User extends Authenticatable
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class, 'reporter_id');
+    }
+
+    /* ════════════════════════════════════════════
+       Accesseurs compatibilité frontend
+       ════════════════════════════════════════════ */
+
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->avatar_url;
+    }
+
+    public function getWhatsappAttribute(): ?string
+    {
+        return $this->whatsapp_phone;
+    }
+
+    public function getRoleAttribute(): string
+    {
+        return $this->hasRole('admin') ? 'admin' : 'user';
     }
 }
