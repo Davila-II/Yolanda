@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['title', 'description', 'price', 'original_price', 'condition', 'size', 'brand', 'color', 'status', 'seller_id', 'category_id'])]
 class Product extends Model
 {
+    use HasFactory;
     /**
      * Le vendeur du produit.
      */
