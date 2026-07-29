@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\V1\ContactLogController;
 use App\Http\Controllers\Api\V1\FavoriteController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ReviewController;
-use Illuminate\Support\Facades\Api\V1\Route;
+use Illuminate\Support\Facades\Route;
 
 /*
 API Routes — v1

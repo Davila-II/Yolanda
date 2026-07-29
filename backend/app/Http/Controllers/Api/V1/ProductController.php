@@ -131,7 +131,7 @@ class ProductController extends Controller
             'description'    => 'required|string',
             'price'          => 'required|numeric|min:0',
             'original_price' => 'nullable|numeric|min:0',
-            'condition'      => 'required|string|in:new,like_new,very_good,good,satisfactory',
+            'condition'      => 'required|string|in:new_with_tag,like_new,very_good,good,satisfactory',
             'size'           => 'nullable|string|max:50',
             'brand'          => 'nullable|string|max:255',
             'color'          => 'nullable|string|max:100',

@@ -13,7 +13,6 @@ class Favorite extends Model
      * Pas d'auto-incrément : la clé primaire est composite.
      */
     public $incrementing = false;
-
     protected $primaryKey = null; // composite : user_id + product_id
 
     /**

@@ -35,9 +35,9 @@ class User extends Authenticatable
         ];
     }
 
-    /* ════════════════════════════════════════════
+    /* 
        Relations
-       ════════════════════════════════════════════ */
+        */
 
     /**
      * Les produits publiés par cet utilisateur (en tant que vendeur).
@@ -87,9 +87,9 @@ class User extends Authenticatable
         return $this->hasMany(Report::class, 'reporter_id');
     }
 
-    /* ════════════════════════════════════════════
+    /* 
        Accesseurs compatibilité frontend
-       ════════════════════════════════════════════ */
+        */
 
     public function getAvatarAttribute(): ?string
     {
