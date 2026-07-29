@@ -13,8 +13,8 @@ class ProductFactory extends Factory
         $price = $this->faker->numberBetween(3000, 60000);
 
         return [
-            'title' => ucfirst($this->faker->words(3, true)),
-            'description' => $this->faker->paragraph(),
+            'title' => $this->faker->realText(30),
+            'description' => $this->faker->realText(200),
             'price' => $price,
             'original_price' => $price * $this->faker->randomFloat(1, 1.3, 2.5),
             'condition' => $this->faker->randomElement([
