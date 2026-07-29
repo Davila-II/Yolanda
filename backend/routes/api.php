@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ContactLogController;
-use App\Http\Controllers\FavoriteController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ReviewController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ContactLogController;
+use App\Http\Controllers\Api\V1\FavoriteController;
+use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ReviewController;
+use Illuminate\Support\Facades\Api\V1\Route;
 
 /*
 API Routes — v1
