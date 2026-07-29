@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ContactLogController;
@@ -50,5 +51,13 @@ Route::prefix('v1')->group(function () {
 
         // Contact WhatsApp
         Route::post('/contacts', [ContactLogController::class, 'store']);
+
+        // Admin
+        Route::middleware('role:admin')->prefix('admin')->group(function () {
+            Route::get('/stats',              [AdminController::class, 'stats']);
+            Route::get('/reports',            [AdminController::class, 'reports']);
+            Route::patch('/reports/{id}',     [AdminController::class, 'updateReport']);
+            Route::patch('/users/{id}/status', [AdminController::class, 'updateUserStatus']);
+        });
     });
 });

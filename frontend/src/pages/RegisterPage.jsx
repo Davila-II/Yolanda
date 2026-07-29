@@ -45,8 +45,8 @@ export default function RegisterPage() {
       return
     }
 
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.')
+    if (password.length < 8) {
+      setError('Le mot de passe doit contenir au moins 8 caractères.')
       return
     }
 
@@ -55,7 +55,7 @@ export default function RegisterPage() {
       const user = await register({
         name: name.trim(),
         email: email.trim(),
-        whatsapp: form.phone.trim(),
+        whatsapp_phone: form.phone.trim(),
         city: form.city.trim(),
         password,
         password_confirmation,
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={updateField('password')}
-                placeholder="6 caractères minimum"
+                placeholder="8 caractères minimum"
                 autoComplete="new-password"
                 className={`${inputClass} pr-10`}
               />

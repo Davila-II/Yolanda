@@ -55,7 +55,7 @@ export default function CategoryPage() {
   useEffect(() => {
     setLoading(true)
     const params = {}
-    if (filters.category) params.category_id = filters.category
+    if (filters.category) params.category = filters.category
     if (filters.subcategory) params.subcategory = filters.subcategory
     if (filters.conditions?.length) params.condition = filters.conditions.join(',')
     if (filters.maxPrice) params.max_price = filters.maxPrice
@@ -83,7 +83,7 @@ export default function CategoryPage() {
       chips.push({ key: 'subcategory', label: filters.subcategory })
     }
     if (filters.conditions?.length) {
-      const labels = { new: 'Neuf', like_new: 'Comme neuf', very_good: 'Très bon état', good: 'Bon état', satisfactory: 'État satisfaisant' }
+      const labels = { new_with_tag: 'Neuf', like_new: 'Comme neuf', very_good: 'Très bon état', good: 'Bon état', satisfactory: 'État satisfaisant' }
       filters.conditions.forEach((c) => chips.push({ key: 'conditions', label: labels[c] || c }))
     }
     return chips

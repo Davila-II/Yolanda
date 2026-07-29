@@ -8,7 +8,7 @@ import ProductCard from '../components/ProductCard.jsx'
 import { getProduct, getSimilarProducts } from '../api/products.js'
 
 const CONDITION_LABELS = {
-  new: 'Neuf avec étiquette',
+  new_with_tag: 'Neuf avec étiquette',
   like_new: 'Comme neuf',
   very_good: 'Très bon état',
   good: 'Bon état',
@@ -174,6 +174,7 @@ export default function ProductDetailPage() {
           <WhatsAppButton
             phone={product.seller?.whatsapp || '+237600000000'}
             productTitle={product.title}
+            productId={product.id}
             className="w-full mb-3"
           />
 

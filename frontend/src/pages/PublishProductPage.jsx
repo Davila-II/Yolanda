@@ -11,7 +11,7 @@ const CATEGORIES = [
 ]
 
 const CONDITIONS = [
-  { value: 'new', label: 'Neuf avec étiquette' },
+  { value: 'new_with_tag', label: 'Neuf avec étiquette' },
   { value: 'like_new', label: 'Comme neuf' },
   { value: 'very_good', label: 'Très bon état' },
   { value: 'good', label: 'Bon état' },

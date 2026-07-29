@@ -14,7 +14,7 @@ const SORT_OPTIONS = [
 ]
 
 const CONDITION_LABELS = {
-  new: 'Neuf',
+  new_with_tag: 'Neuf',
   like_new: 'Comme neuf',
   very_good: 'Très bon état',
   good: 'Bon état',
@@ -62,7 +62,7 @@ export default function SearchPage() {
     setLoading(true)
     const params = {}
     if (query.trim()) params.q = query.trim()
-    if (filters.category) params.category_id = filters.category
+    if (filters.category) params.category = filters.category
     if (filters.subcategory) params.subcategory = filters.subcategory
     if (filters.conditions?.length) params.condition = filters.conditions.join(',')
     if (filters.sizes?.length) params.size = filters.sizes.join(',')

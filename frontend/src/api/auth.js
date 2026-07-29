@@ -84,7 +84,10 @@ export const getMe = () =>
     ? Promise.resolve({ data: JSON.parse(localStorage.getItem('user') || 'null') })
     : client.get('/auth/me').then((res) => res.data)
 
-export const logout = () => {
+export const logout = async () => {
+  if (!USE_MOCK) {
+    try { await client.post('/auth/logout') } catch { /* ignore */ }
+  }
   localStorage.removeItem('token')
   localStorage.removeItem('user')
 }

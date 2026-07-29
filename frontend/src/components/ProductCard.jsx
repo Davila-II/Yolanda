@@ -66,7 +66,7 @@ export default function ProductCard({ product, showFavorite = true }) {
 
   const discount = discountPercent(original_price, price)
   const hasImage = images && images.length > 0
-  const isNew = condition === 'new'
+  const isNew = condition === 'new_with_tag'
 
   return (
     <Link
