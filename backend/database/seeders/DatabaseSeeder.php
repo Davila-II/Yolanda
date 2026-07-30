@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\User;
@@ -15,12 +16,15 @@ class DatabaseSeeder extends Seeder
 
         $this->call(CategorySeeder::class);
 
-        Product::factory(50)->create()->each(function (Product $product) {
-            ProductImage::create([
-                'product_id' => $product->id,
-                'url' => 'https://picsum.photos/seed/'.$product->id.'/600/800',
-                'position' => 0,
-            ]);
+        // Génère 3 produits pour CHAQUE sous-catégorie, avec un titre cohérent
+        Category::whereNotNull('parent_id')->get()->each(function (Category $category) {
+            Product::factory(3)->forCategory($category)->create()->each(function (Product $product) {
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'url' => 'https://picsum.photos/seed/'.$product->id.'/600/800',
+                    'position' => 0,
+                ]);
+            });
         });
     }
 }
