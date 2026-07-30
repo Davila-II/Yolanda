@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ContactLogController;
 use App\Http\Controllers\Api\V1\FavoriteController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,9 @@ Route::prefix('v1')->group(function () {
         // Favoris
         Route::get('/favorites',              [FavoriteController::class, 'index']);
         Route::post('/favorites/{productId}', [FavoriteController::class, 'toggle']);
+
+      //reports
+      Route::post('/reports', [ReportController::class, 'store']);
 
         // Avis
         Route::post('/reviews', [ReviewController::class, 'store']);
