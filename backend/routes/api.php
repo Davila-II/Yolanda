@@ -23,8 +23,13 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login',    [AuthController::class, 'login']);
 
     /* 
+       Produits de l'utilisateur connecté (déclarée avant products/{id})
+        */
+    Route::middleware('auth:sanctum')->get('/products/me', [ProductController::class, 'myProducts']);
+
+    /* 
        Publiques (pas d'auth)
-       */
+        */
     Route::get('/products',             [ProductController::class, 'index']);
     Route::get('/products/{id}',         [ProductController::class, 'show']);
     Route::get('/products/{id}/similar', [ProductController::class, 'similar']);
@@ -42,6 +47,9 @@ Route::prefix('v1')->group(function () {
         // Produits (création, upload)
         Route::post('/products',             [ProductController::class, 'store']);
         Route::post('/products/{id}/images', [ProductController::class, 'uploadImage']);
+        Route::put('/products/{id}',         [ProductController::class, 'update']);
+        Route::patch('/products/{id}/status', [ProductController::class, 'updateStatus']);
+        Route::delete('/products/{id}',      [ProductController::class, 'destroy']);
 
         // Favoris
         Route::get('/favorites',              [FavoriteController::class, 'index']);

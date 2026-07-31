@@ -69,15 +69,28 @@ const mockRegister = async (data) => {
   return { user, token }
 }
 
+function persistSession(user, token) {
+  try {
+    localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(user))
+  } catch { /* ignore */ }
+}
+
 export const login = (credentials) =>
   USE_MOCK
     ? mockLogin(credentials)
-    : client.post('/auth/login', credentials).then((res) => res.data)
+    : client.post('/auth/login', credentials).then((res) => {
+        persistSession(res.data.user, res.data.token)
+        return res.data
+      })
 
 export const register = (data) =>
   USE_MOCK
     ? mockRegister(data)
-    : client.post('/auth/register', data).then((res) => res.data)
+    : client.post('/auth/register', data).then((res) => {
+        persistSession(res.data.user, res.data.token)
+        return res.data
+      })
 
 export const getMe = () =>
   USE_MOCK

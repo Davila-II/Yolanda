@@ -169,4 +169,88 @@ class ProductController extends Controller
 
         return response()->json(['data' => $image], 201);
     }
+
+    /**
+     * Liste des produits de l'utilisateur connecté (tous statuts).
+     */
+    public function myProducts(Request $request): JsonResponse
+    {
+        $products = $request->user()->products()
+            ->with(['category', 'images'])
+            ->latest()
+            ->get();
+
+        return response()->json(['data' => $products]);
+    }
+
+    /**
+     * Modifier une annonce (propriétaire uniquement).
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        if ($product->seller_id !== $request->user()->id) {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
+        $validated = $request->validate([
+            'title'          => 'required|string|max:255',
+            'description'    => 'required|string',
+            'price'          => 'required|numeric|min:0',
+            'original_price' => 'nullable|numeric|min:0',
+            'condition'      => 'required|string|in:new_with_tag,like_new,very_good,good,satisfactory',
+            'size'           => 'nullable|string|max:50',
+            'brand'          => 'nullable|string|max:255',
+            'color'          => 'nullable|string|max:100',
+            'category_id'    => 'required|exists:categories,id',
+        ]);
+
+        $product->update($validated);
+
+        return response()->json(['data' => $product->fresh(['category', 'images'])]);
+    }
+
+    /**
+     * Changer le statut d'une annonce (publiée / vendue / archivée).
+     */
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        if ($product->seller_id !== $request->user()->id) {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:published,sold,archived',
+        ]);
+
+        $product->update($validated);
+
+        return response()->json(['data' => $product->fresh(['category', 'images'])]);
+    }
+
+    /**
+     * Supprimer une annonce (propriétaire uniquement).
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $product = Product::findOrFail($id);
+
+        if ($product->seller_id !== $request->user()->id) {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
+        // Supprime les fichiers d'images du disque
+        $product->images()->get()->each(function ($image) {
+            if (str_starts_with($image->url, '/storage/')) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $image->url));
+            }
+        });
+
+        $product->delete();
+
+        return response()->json(null, 204);
+    }
 }

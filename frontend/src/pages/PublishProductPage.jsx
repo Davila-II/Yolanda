@@ -1,14 +1,10 @@
 // src/pages/PublishProductPage.jsx
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { Upload, Info, ImagePlus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { createProduct } from '../api/products.js'
-
-const CATEGORIES = [
-  'Femmes', 'Hommes', 'Enfants',
-  'Chaussures', 'Sacs & Accessoires', 'Beauté',
-]
+import { createProduct, updateProduct, uploadProductImage, getProduct } from '../api/products.js'
+import { getCategories } from '../api/categories.js'
 
 const CONDITIONS = [
   { value: 'new_with_tag', label: 'Neuf avec étiquette' },
@@ -25,56 +21,121 @@ const inputBase = 'w-full bg-cream-dark rounded-xl px-4 py-3 text-sm text-charco
 export default function PublishProductPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const location = useLocation()
+  const editId = searchParams.get('edit')
+  const editingProduct = editId ? location.state?.product || null : null
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('')
-  const [condition, setCondition] = useState('')
-  const [size, setSize] = useState('')
-  const [brand, setBrand] = useState('')
-  const [color, setColor] = useState('')
-  const [price, setPrice] = useState('')
+  const [title, setTitle] = useState(editingProduct?.title || '')
+  const [description, setDescription] = useState(editingProduct?.description || '')
+  const [categoryId, setCategoryId] = useState(editingProduct?.category_id ?? null)
+  const [categories, setCategories] = useState([])
+  const [condition, setCondition] = useState(editingProduct?.condition || '')
+  const [size, setSize] = useState(editingProduct?.size || '')
+  const [brand, setBrand] = useState(editingProduct?.brand || '')
+  const [color, setColor] = useState(editingProduct?.color || '')
+  const [price, setPrice] = useState(editingProduct?.price != null ? String(editingProduct.price) : '')
   const [whatsapp, setWhatsapp] = useState(user?.whatsapp || '')
-  const [images, setImages] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [images, setImages] = useState([]) // [{ file, preview }] — nouvelles images
+  const [loading, setLoading] = useState(!!editId && !editingProduct)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
+  useEffect(() => {
+    getCategories().then((res) => setCategories(res.data.data || [])).catch(() => {})
+  }, [])
+
+  // Mode édition : recharge l'annonce si on arrive sans état (ex. refresh de page)
+  useEffect(() => {
+    if (!editId || editingProduct) return
+    getProduct(editId)
+      .then((res) => {
+        const p = res.data?.data || res.data
+        setTitle(p.title || '')
+        setDescription(p.description || '')
+        setCategoryId(p.category_id ?? null)
+        setCondition(p.condition || '')
+        setSize(p.size || '')
+        setBrand(p.brand || '')
+        setColor(p.color || '')
+        setPrice(p.price != null ? String(p.price) : '')
+      })
+      .catch(() => setError('Impossible de charger cette annonce.'))
+      .finally(() => setLoading(false))
+  }, [editId, editingProduct])
+
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
   const handleImageAdd = (e) => {
     const files = Array.from(e.target.files || [])
-    const urls = files.map((f) => URL.createObjectURL(f))
-    setImages((prev) => [...prev, ...urls].slice(0, 5))
+    const rejected = files.find((file) => file.size > MAX_IMAGE_SIZE || !ACCEPTED_TYPES.includes(file.type))
+    if (rejected) {
+      setError(
+        rejected.size > MAX_IMAGE_SIZE
+          ? `« ${rejected.name} » dépasse 5 Mo : choisissez une photo plus légère.`
+          : `« ${rejected.name} » n'est pas une image valide (JPEG, PNG ou WEBP requis).`
+      )
+      e.target.value = ''
+      return
+    }
+    const next = files.map((file) => ({ file, preview: URL.createObjectURL(file) }))
+    setImages((prev) => [...prev, ...next].slice(0, 5))
   }
 
-  const removeImage = (idx) => setImages((prev) => prev.filter((_, i) => i !== idx))
+  const removeImage = (idx) => setImages((prev) => {
+    const item = prev[idx]
+    if (item) URL.revokeObjectURL(item.preview)
+    return prev.filter((_, i) => i !== idx)
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
     if (!title.trim()) { setError('Le titre est obligatoire.'); return }
-    if (!category) { setError('Choisissez une catégorie.'); return }
+    if (!categoryId) { setError('Choisissez une catégorie.'); return }
     if (!condition) { setError('Précisez l\'état de l\'article.'); return }
     if (!price || Number(price) < 100) { setError('Le prix doit être d\'au moins 100 FCFA.'); return }
     if (!whatsapp.trim()) { setError('Le numéro WhatsApp est obligatoire.'); return }
 
     setLoading(true)
     try {
-      await createProduct({
+      const payload = {
         title: title.trim(),
         description: description.trim(),
-        category_id: CATEGORIES.indexOf(category) + 1,
+        category_id: categoryId,
         condition,
         size,
         brand: brand.trim(),
         color: color.trim(),
         price: Number(price),
         whatsapp: whatsapp.trim(),
-      })
+      }
+
+      let product
+      if (editingProduct) {
+        const res = await updateProduct(editingProduct.id, payload)
+        product = res.data?.data || res.data
+      } else {
+        const res = await createProduct(payload)
+        product = res.data?.data || res.data
+      }
+
+      for (const { file } of images) {
+        const formData = new FormData()
+        formData.append('image', file)
+        await uploadProductImage(product.id, formData)
+      }
+
       setSuccess(true)
       setTimeout(() => navigate('/dashboard'), 1500)
     } catch (err) {
-      setError(err?.response?.data?.message || 'Erreur lors de la publication.')
+      const backendMsg = err?.response?.data?.errors?.image?.[0] || err?.response?.data?.message
+      const imageHint = backendMsg && /image|upload/i.test(backendMsg)
+        ? ' Vérifiez le format (JPEG, PNG, WEBP) et la taille (max 5 Mo).'
+        : ''
+      setError(backendMsg ? `${backendMsg}.${imageHint}` : 'Erreur lors de la publication.')
     } finally {
       setLoading(false)
     }
@@ -86,7 +147,7 @@ export default function PublishProductPage() {
         <div className="w-16 h-16 rounded-full bg-terracotta-light text-terracotta flex items-center justify-center mx-auto mb-4">
           <Upload size={28} />
         </div>
-        <h1 className="font-serif text-2xl text-charcoal mb-2">Article publié !</h1>
+        <h1 className="font-serif text-2xl text-charcoal mb-2">{editingProduct ? 'Modifications enregistrées !' : 'Article publié !'}</h1>
         <p className="text-sm text-gray-medium">Redirection vers votre tableau de bord...</p>
       </div>
     )
@@ -94,7 +155,7 @@ export default function PublishProductPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="font-serif text-2xl md:text-3xl text-charcoal mb-8">Ajouter un article</h1>
+      <h1 className="font-serif text-2xl md:text-3xl text-charcoal mb-8">{editingProduct ? 'Modifier l\'article' : 'Ajouter un article'}</h1>
 
       {error && (
         <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-error text-center">{error}</div>
@@ -103,6 +164,16 @@ export default function PublishProductPage() {
       <form onSubmit={handleSubmit} className="space-y-10">
         {/* ── Photos ── */}
         <Section title="Photos">
+          {editingProduct?.images?.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {editingProduct.images.map((src, i) => (
+                <div key={i} className="shrink-0 w-20 h-24 rounded-lg overflow-hidden bg-cream-dark">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="border-2 border-dashed border-gray-light rounded-xl p-8 text-center hover:border-terracotta/40 transition-colors cursor-pointer relative">
             <input
               type="file"
@@ -118,9 +189,9 @@ export default function PublishProductPage() {
 
           {images.length > 0 && (
             <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-hide">
-              {images.map((url, i) => (
+              {images.map(({ preview }, i) => (
                 <div key={i} className="relative shrink-0 w-20 h-24 rounded-lg overflow-hidden bg-cream-dark">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <img src={preview} alt="" className="w-full h-full object-cover" />
                   <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-7 h-7 rounded-full bg-black/50 text-white text-sm flex items-center justify-center">×</button>
                 </div>
               ))}
@@ -163,12 +234,12 @@ export default function PublishProductPage() {
           <div>
             <label className="block text-xs text-gray-light uppercase tracking-wider mb-2">Catégorie</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {CATEGORIES.map((cat) => (
-                <button key={cat} type="button" onClick={() => setCategory(cat)}
+              {categories.map((cat) => (
+                <button key={cat.id} type="button" onClick={() => setCategoryId(cat.id)}
                   className={`text-sm py-3 px-4 rounded-xl border-2 transition-colors text-center ${
-                    category === cat ? 'border-terracotta bg-terracotta-light/30 text-terracotta font-medium' : 'border-cream-dark bg-cream-dark text-gray-medium hover:border-gray-light'
+                    categoryId === cat.id ? 'border-terracotta bg-terracotta-light/30 text-terracotta font-medium' : 'border-cream-dark bg-cream-dark text-gray-medium hover:border-gray-light'
                   }`}>
-                  {cat}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -247,7 +318,7 @@ export default function PublishProductPage() {
         <div className="pt-4">
           <button type="submit" disabled={loading}
             className="w-full bg-black-solid hover:bg-charcoal text-white text-sm font-medium py-3.5 rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
-            {loading ? 'Publication...' : 'Publier mon article'}
+            {loading ? 'Enregistrement...' : editingProduct ? 'Enregistrer les modifications' : 'Publier mon article'}
           </button>
           <p className="text-xs text-gray-light text-center mt-3">
             En publiant, vous acceptez les conditions générales d&rsquo;utilisation de Yolanda.

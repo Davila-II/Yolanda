@@ -3,11 +3,17 @@ import client from './client'
 
 const USE_MOCK = !import.meta.env.VITE_API_URL
 
+const API_ORIGIN = new URL(import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').origin
+
+export function resolveImageUrl(url) {
+  return typeof url === 'string' && url.startsWith('/') ? API_ORIGIN + url : url
+}
+
 function normalizeImages(products) {
   if (!products) return
   products.forEach(p => {
     if (p.images && Array.isArray(p.images)) {
-      p.images = p.images.map(img => (typeof img === 'string' ? img : (img?.url || img)))
+      p.images = p.images.map(img => resolveImageUrl(typeof img === 'string' ? img : (img?.url || img)))
     }
   })
 }
@@ -40,7 +46,7 @@ export const getProduct = (id) => {
     const p = res.data?.data
     if (p) {
       if (p.images && Array.isArray(p.images)) {
-        p.images = p.images.map(img => (typeof img === 'string' ? img : (img?.url || img)))
+        p.images = p.images.map(img => resolveImageUrl(typeof img === 'string' ? img : (img?.url || img)))
       }
       if (p.seller) {
         if (p.seller.received_reviews_avg_rating != null) p.seller.rating = p.seller.received_reviews_avg_rating
@@ -65,4 +71,19 @@ export const createProduct = (data) =>
   USE_MOCK ? Promise.resolve({ data: { data: { id: 99, ...data } } }) : client.post('/products', data)
 
 export const uploadProductImage = (productId, formData) =>
-  USE_MOCK ? Promise.resolve({ data: { data: { id: 1, url: '' } } }) : client.post(`/products/${productId}/images`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  USE_MOCK ? Promise.resolve({ data: { data: { id: 1, url: '' } } }) : client.post(`/products/${productId}/images`, formData, { headers: { 'Content-Type': undefined } })
+
+export const getMyProducts = () =>
+  USE_MOCK ? Promise.resolve({ data: { data: MOCK_PRODUCTS } }) : client.get('/products/me').then(res => {
+    if (Array.isArray(res.data?.data)) normalizeImages(res.data.data)
+    return res
+  })
+
+export const updateProduct = (id, data) =>
+  USE_MOCK ? Promise.resolve({ data: { data: { id, ...data } } }) : client.put(`/products/${id}`, data)
+
+export const updateProductStatus = (id, status) =>
+  USE_MOCK ? Promise.resolve({ data: { data: { id, status } } }) : client.patch(`/products/${id}/status`, { status })
+
+export const deleteProduct = (id) =>
+  USE_MOCK ? Promise.resolve({ data: {} }) : client.delete(`/products/${id}`)

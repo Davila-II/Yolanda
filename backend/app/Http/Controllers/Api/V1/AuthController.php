@@ -34,6 +34,8 @@ class AuthController extends Controller
             'city'           => $validated['city'] ?? null,
         ]);
 
+        $user->assignRole('user');
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -59,9 +61,6 @@ class AuthController extends Controller
                 'email' => ['Les identifiants fournis sont incorrects.'],
             ]);
         }
-
-        // Révoque les anciens tokens du même nom pour éviter l'accumulation
-        $user->tokens()->where('name', 'auth_token')->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
