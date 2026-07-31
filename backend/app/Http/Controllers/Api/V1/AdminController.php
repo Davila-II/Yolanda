@@ -14,10 +14,9 @@ class AdminController extends Controller
     {
         return response()->json([
             'data' => [
-                'total_users'     => User::count(),
-                'total_products'  => Product::count(),
-                'total_reports'   => Report::count(),
-                'total_sales'     => 0,
+                'total_users'    => User::count(),
+                'total_products' => Product::count(),
+                'total_reports'  => Report::count(),
             ],
         ]);
     }
@@ -50,8 +49,9 @@ class AdminController extends Controller
         ]);
 
         $user = User::findOrFail($id);
+        $user->update(['status' => $validated['status']]);
 
-        if ($validated['status'] === 'banned' || $validated['status'] === 'suspended') {
+        if (in_array($validated['status'], ['banned', 'suspended'])) {
             $user->tokens()->delete();
         }
 

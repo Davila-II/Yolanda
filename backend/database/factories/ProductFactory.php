@@ -33,6 +33,11 @@ class ProductFactory extends Factory
         'beaute-maquillage' => ['Palette fards à paupières', 'Rouge à lèvres mat', 'Fond de teint longue tenue'],
     ];
 
+  public static function titlesFor(?string $slug): array
+{
+    return self::$catalog[$slug] ?? ['Article'];
+}
+
     /**
      * Type de taille à utiliser selon la catégorie.
      */

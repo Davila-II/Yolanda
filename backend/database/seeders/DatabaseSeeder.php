@@ -18,7 +18,13 @@ class DatabaseSeeder extends Seeder
 
         // Génère 3 produits pour CHAQUE sous-catégorie, avec un titre cohérent
         Category::whereNotNull('parent_id')->get()->each(function (Category $category) {
-            Product::factory(3)->forCategory($category)->create()->each(function (Product $product) {
+              $titles = collect(\Database\Factories\ProductFactory::titlesFor($category->slug))
+                ->shuffle()
+                ->take(3);
+        
+            $titles->each(function (string $title) use ($category) {
+                $product = Product::factory()->forCategory($category)->create(['title' => $title]);
+        
                 ProductImage::create([
                     'product_id' => $product->id,
                     'url' => 'https://picsum.photos/seed/'.$product->id.'/600/800',

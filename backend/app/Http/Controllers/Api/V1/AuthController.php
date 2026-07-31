@@ -60,6 +60,14 @@ class AuthController extends Controller
             ]);
         }
 
+      //Empecher un compte banni/suspendu de se reconnecter
+      if ($user->status !== 'active') {
+    throw ValidationException::withMessages([
+        'email' => ['Votre compte a été suspendu ou banni.'],
+    ]);
+      }
+      
+
         // Révoque les anciens tokens du même nom pour éviter l'accumulation
         $user->tokens()->where('name', 'auth_token')->delete();
 
